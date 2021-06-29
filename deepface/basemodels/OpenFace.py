@@ -228,7 +228,7 @@ def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1LSe1YCV1x-BfNnf
 	# Final Model
 	model = Model(inputs=[myInput], outputs=norm_layer)
 	#-----------------------------------
-	weight_file = weight_dir + "openface_weights.h5"
+	weight_file = os.path.join(weight_dir, "openface_weights.h5")
 	
 	if os.path.isfile(weight_file) != True:
 		print("openface_weights.h5 will be downloaded...")

@@ -1,20 +1,13 @@
 import os
 #os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
+os.environ['CUDA_VISIBLE_DEVICES'] = '0'
 
-import time
-from os import path
 import numpy as np
-import pandas as pd
-from tqdm import tqdm
-import pickle
-import dlib
-import cv2
 
-from deepface.detectors import DlibWrapper
-from deepface.basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, DeepID, ArcFace, Boosting
-from deepface.extendedmodels import Age, Gender, Race, Emotion
-from deepface.commons import functions, realtime, distance as dst
+from deepface.basemodels import VGGFace, OpenFace, Facenet, FbDeepFace, Boosting
+from deepface.extendedmodels import Age, Gender
+from deepface.commons import functions, distance as dst
 
 import tensorflow as tf
 tf_version = int(tf.__version__.split(".")[0])
@@ -25,18 +18,6 @@ gpus = tf.config.experimental.list_physical_devices('GPU')
 tf.config.experimental.set_virtual_device_configuration(gpus[0], [tf.config.experimental.VirtualDeviceConfiguration(memory_limit=8096)])
 
 def build_model(model_name, weight_dir):
-
-	"""
-	This function builds a deepface model
-	Parameters:
-		model_name (string): face recognition or facial attribute model
-			VGG-Face, Facenet, OpenFace, DeepFace, DeepID for face recognition
-			Age, Gender, Emotion, Race for facial attributes
-
-	Returns:
-		built deepface model
-	"""
-
 	global model_obj #singleton design pattern
 
 	models = {
@@ -44,48 +25,36 @@ def build_model(model_name, weight_dir):
 		'open_face': OpenFace.loadModel,
 		'facenet': Facenet.loadModel,
 		'deep_face': FbDeepFace.loadModel,
-		'dlib': DlibWrapper.build_model,
 		'age': Age.loadModel,
 		'gender': Gender.loadModel
 	}
 
-	if not "model_obj" in globals():
-		model_obj = {}
-
-	if not model_name in model_obj.keys():
-		model = models.get(model_name)
-		if model:
-			model = model(weight_dir)
-			model_obj[model_name] = model
-			print(model_name, "built")
-		else:
-			raise ValueError('Invalid model_name passed - {}'.format(model_name))
-
-	return model_obj[model_name]
+	return models.get(model_name)(weight_dir)
 
 class DeepFaceHelper:
-	def __init__(self, weights_dir=None, detector="dlib"):
+	def __init__(self, weights_dir=None, load_gbm=True, load_age_gender=True, detector="dlib"):
+		self.embedding_models = ["vgg_face", "facenet", "open_face", "deep_face"]
+		self.weights_dir = weights_dir
+		self.models = {}
+
 		if weights_dir is not None:
-            # Load embedding models
-			self.embedding_models = ["vgg_face", "facenet", "open_face", "deep_face"]
-			self.models = {}
-			for em in self.embedding_models:
-				self.models[em] = build_model(em, weights_dir)
-
-			# Load detector:
-			if detector != "dlib":
-				raise NotImplementedError(f"Detector {detector} is not implemented")
-			else:
-				self.detector = build_model(detector, weights_dir)
-
 			# Load age and gender model
-			# self.models["age"] = build_model("age", weights_dir)
-			# self.models["gender"] = build_model("gender", weights_dir)
+			if load_age_gender:
+				self.models["age"] = build_model("age", weights_dir)
+				self.models["gender"] = build_model("gender", weights_dir)
 
 			# Load light gbm model
-			self.boosted_tree = Boosting.build_gbm(weights_dir)
+			if load_gbm:
+				self.boosted_tree = Boosting.build_gbm(weights_dir)
 		else:
 			print("Weight directory is not specified, skipping")
+
+	def load_model(self, model_name):
+		return build_model(model_name, self.weights_dir)
+
+	def load_embedding_models(self):
+		for em in self.embedding_models:
+			self.models[em] = self.load_model(em)
 
 	def get_embedding(self, image, model):
 		input_shape_x, input_shape_y= functions.find_input_shape(model)
@@ -93,19 +62,29 @@ class DeepFaceHelper:
 
 		return model.predict(preprocessed_image)[0].tolist()
     
-	def get_face_embedding(self, image_path):
-		image = functions.load_image(image_path)
-
-		# Detect and align face
-		aligned_face = functions.detect_and_align(image, self.detector, "dlib", grayscale=False, enforce_detection=True, align=True)
-
+	def get_face_embedding(self, image):  # BGR
+		if type(image) == str:
+			image = functions.load_image(image)
 		# Predict embeddings
 		embeddings = {}
 		for em in self.embedding_models:
-			# print("Predicting", em)
-			embeddings[em] = self.get_embedding(aligned_face, self.models[em])
+			embeddings[em] = self.get_embedding(image, self.models[em])
 
 		return embeddings
+
+	def get_age_gender(self, image):  # BGR
+		if type(image) == str:
+			image = functions.load_image(image)
+		img_224 = functions.preprocess_face(image, (224, 224))
+		age_predictions = self.models["age"].predict(img_224)[0,:]
+		age = Age.findApparentAge(age_predictions)
+
+		gender_prediction = self.models['gender'].predict(img_224)[0,:]
+		gender = np.argmax(gender_prediction)
+		return {
+			"age": age,
+			"gender": gender
+		}
 
 	def get_distances(self, embd1, embd2):
 		distances = {}

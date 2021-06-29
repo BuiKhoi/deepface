@@ -1,28 +1,10 @@
-from deepface import DeepFace
+# from deepface import DeepFace
 from tqdm import tqdm
 import os
 from os import path
 from pathlib import Path
 import numpy as np
 import gdown
-from deepface.commons import functions, distance as dst
-
-def loadModel():
-	
-	model_names = ['VGG-Face', 'Facenet', 'OpenFace', 'DeepFace']
-
-	model = {}
-	
-	model_pbar = tqdm(range(0, 4), desc='Face recognition models')
-	
-	for index in model_pbar:
-		
-		model_name = model_names[index]
-		
-		model_pbar.set_description("Loading %s" % (model_name))
-		model[model_name] = DeepFace.build_model(model_name)
-	
-	return model
 
 def validate_model(model):
 	#validate model dictionary because it might be passed from input as pre-trained

@@ -34,7 +34,7 @@ def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1wUXRVlbsni2FN9-
 
 	#load weights
 
-	weight_file = weight_dir+"gender_model_weights.h5"
+	weight_file = os.path.join(weight_dir, "gender_model_weights.h5")
 
 	if os.path.isfile(weight_file) != True:
 		print("gender_model_weights.h5 will be downloaded...")

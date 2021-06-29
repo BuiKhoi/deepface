@@ -24,11 +24,11 @@ def loadModel(weight_dir, url = 'https://github.com/swghosh/DeepFace/releases/do
 	
 	#---------------------------------
 	
-	weight_file = weight_dir + "VGGFace2_DeepFace_weights_val-0.9034.h5"
+	weight_file = os.path.join(weight_dir, "VGGFace2_DeepFace_weights_val-0.9034.h5")
 	
 	if os.path.isfile(weight_file) != True:
 		print("VGGFace2_DeepFace_weights_val-0.9034.h5 will be downloaded...")
-		output = weight_dir + 'VGGFace2_DeepFace_weights_val-0.9034.h5.zip'
+		output = os.path.join(weight_dir, 'VGGFace2_DeepFace_weights_val-0.9034.h5.zip')
 		gdown.download(url, output, quiet=False)
 		#unzip
 		with zipfile.ZipFile(output, 'r') as zip_ref:

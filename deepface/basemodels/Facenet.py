@@ -535,7 +535,7 @@ def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1971Xk5RwedbudGg
 	
 	#-----------------------------------
 	
-	weight_file = weight_dir + 'facenet_weights.h5'
+	weight_file = os.path.join(weight_dir, 'facenet_weights.h5')
 	
 	if os.path.isfile(weight_file) != True:
 		print("facenet_weights.h5 will be downloaded...")

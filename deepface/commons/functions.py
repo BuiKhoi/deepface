@@ -5,8 +5,6 @@ import cv2
 import base64
 from pathlib import Path
 
-from deepface.detectors import FaceDetector
-
 import tensorflow as tf
 tf_version = int(tf.__version__.split(".")[0])
 
@@ -81,25 +79,6 @@ def load_image(img):
 		img = cv2.imread(img)
 
 	return img
-
-def detect_and_align(img, detector, detector_backend, grayscale = False, enforce_detection = True, align = True):
-
-	img_region = [0, 0, img.shape[0], img.shape[1]]
-
-	#detector stored in a global variable in FaceDetector object.
-	#this call should be completed very fast because it will return found in memory
-	#it will not build face detector model in each call (consider for loops)
-
-	detected_face = FaceDetector.detect_face(detector, detector_backend, img, align)
-
-	if (isinstance(detected_face, np.ndarray)):
-		return detected_face
-	else:
-		if detected_face == None:
-			if enforce_detection != True:
-			  return img, img_region
-			else:
-			  raise ValueError("Face could not be detected. Please confirm that the picture is a face photo or consider to set enforce_detection param to False.")
 
 def preprocess_face(img, target_size=(224, 224), grayscale = False):
 	if grayscale == True:

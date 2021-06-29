@@ -16,7 +16,7 @@ elif tf_version == 2:
 	from tensorflow.keras.models import Model, Sequential
 	from tensorflow.keras.layers import Convolution2D, Flatten, Activation
 
-def loadModel(url = 'https://drive.google.com/uc?id=1YCox_4kJ-BYeXq27uUbasu--yz28zUMV'):
+def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1YCox_4kJ-BYeXq27uUbasu--yz28zUMV'):
 
 	model = VGGFace.baseModel()
 
@@ -36,15 +36,13 @@ def loadModel(url = 'https://drive.google.com/uc?id=1YCox_4kJ-BYeXq27uUbasu--yz2
 
 	#load weights
 
-	home = str(Path.home())
+	weight_dir = weight_dir+'age_model_weights.h5'
 
-	if os.path.isfile(home+'/.deepface/weights/age_model_weights.h5') != True:
+	if os.path.isfile(weight_dir) != True:
 		print("age_model_weights.h5 will be downloaded...")
+		gdown.download(url, weight_dir, quiet=False)
 
-		output = home+'/.deepface/weights/age_model_weights.h5'
-		gdown.download(url, output, quiet=False)
-
-	age_model.load_weights(home+'/.deepface/weights/age_model_weights.h5')
+	age_model.load_weights(weight_dir)
 
 	return age_model
 

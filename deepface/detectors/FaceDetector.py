@@ -41,14 +41,9 @@ def detect_face(face_detector, detector_backend, img, align = True):
         'retinaface': RetinaFaceWrapper.detect_face
     }
 
-    detect_face = backends.get(detector_backend)
+    detect_face = backends[detector_backend]
 
-    if detect_face:
-        face, region = detect_face(face_detector, img, align)
-    else:
-        raise ValueError("invalid detector_backend passed - " + detector_backend)
-
-    return face, region
+    return detect_face(face_detector, img, align)
 
 def alignment_procedure(img, left_eye, right_eye):
 

@@ -13,7 +13,7 @@ from tensorflow.keras import backend as K
 
 #---------------------------------------
 
-def loadModel(url = 'https://drive.google.com/uc?id=1LSe1YCV1x-BfNnfb7DFZTNpv_Q9jITxn'):
+def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1LSe1YCV1x-BfNnfb7DFZTNpv_Q9jITxn'):
 	myInput = Input(shape=(96, 96, 3))
 
 	x = ZeroPadding2D(padding=(3, 3), input_shape=(96, 96, 3))(myInput)
@@ -227,21 +227,14 @@ def loadModel(url = 'https://drive.google.com/uc?id=1LSe1YCV1x-BfNnfb7DFZTNpv_Q9
 
 	# Final Model
 	model = Model(inputs=[myInput], outputs=norm_layer)
-	
 	#-----------------------------------
+	weight_file = weight_dir + "openface_weights.h5"
 	
-	home = str(Path.home())
-	
-	if os.path.isfile(home+'/.deepface/weights/openface_weights.h5') != True:
+	if os.path.isfile(weight_file) != True:
 		print("openface_weights.h5 will be downloaded...")
-		
-		output = home+'/.deepface/weights/openface_weights.h5'
-		gdown.download(url, output, quiet=False)
-	
+		gdown.download(url, weight_file, quiet=False)
 	#-----------------------------------
-	
-	model.load_weights(home+'/.deepface/weights/openface_weights.h5')
-	
+	model.load_weights(weight_file)
 	#-----------------------------------
 	
 	return model

@@ -39,20 +39,19 @@ def validate_model(model):
 		
 		raise ValueError("You'd like to apply ensemble method and pass pre-built models but models must contain [VGG-Face, Facenet, OpenFace, DeepFace] but you passed "+str(found_models)+". So, you need to pass "+str(missing_ones)+" models as well.")
 
-def build_gbm():
+def build_gbm(weight_dir):
 	
 	#this is not a must dependency
 	import lightgbm as lgb #lightgbm==2.3.1
 	
-	home = str(Path.home())
+	weight_path = weight_dir+"face-recognition-ensemble-model.txt"
 	
-	if os.path.isfile(home+'/.deepface/weights/face-recognition-ensemble-model.txt') != True:
+	if os.path.isfile(weight_path) != True:
 		print("face-recognition-ensemble-model.txt will be downloaded...")
 		url = 'https://raw.githubusercontent.com/serengil/deepface/master/deepface/models/face-recognition-ensemble-model.txt'
-		output = home+'/.deepface/weights/face-recognition-ensemble-model.txt'
-		gdown.download(url, output, quiet=False)
+		gdown.download(url, weight_path, quiet=False)
 		
-	ensemble_model_path = home+'/.deepface/weights/face-recognition-ensemble-model.txt'
+	ensemble_model_path = weight_path
 	
 	deepface_ensemble = lgb.Booster(model_file = ensemble_model_path)
 	

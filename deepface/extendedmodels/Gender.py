@@ -14,7 +14,7 @@ elif tf_version == 2:
 	from tensorflow.keras.models import Model, Sequential
 	from tensorflow.keras.layers import Convolution2D, Flatten, Activation
 
-def loadModel(url = 'https://drive.google.com/uc?id=1wUXRVlbsni2FN9-jkS_f4UTUrm1bRLyk'):
+def loadModel(weight_dir, url = 'https://drive.google.com/uc?id=1wUXRVlbsni2FN9-jkS_f4UTUrm1bRLyk'):
 
 	model = VGGFace.baseModel()
 
@@ -34,15 +34,13 @@ def loadModel(url = 'https://drive.google.com/uc?id=1wUXRVlbsni2FN9-jkS_f4UTUrm1
 
 	#load weights
 
-	home = str(Path.home())
+	weight_file = weight_dir+"gender_model_weights.h5"
 
-	if os.path.isfile(home+'/.deepface/weights/gender_model_weights.h5') != True:
+	if os.path.isfile(weight_file) != True:
 		print("gender_model_weights.h5 will be downloaded...")
+		gdown.download(url, weight_file, quiet=False)
 
-		output = home+'/.deepface/weights/gender_model_weights.h5'
-		gdown.download(url, output, quiet=False)
-
-	gender_model.load_weights(home+'/.deepface/weights/gender_model_weights.h5')
+	gender_model.load_weights(weight_file)
 
 	return gender_model
 

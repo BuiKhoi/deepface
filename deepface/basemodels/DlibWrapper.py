@@ -1,4 +1,4 @@
 from deepface.basemodels.DlibResNet import DlibResNet
 
-def loadModel():
-	return DlibResNet()
+def loadModel(weight_dir):
+	return DlibResNet(weight_dir)

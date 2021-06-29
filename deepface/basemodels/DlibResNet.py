@@ -7,7 +7,7 @@ from pathlib import Path
 
 class DlibResNet:
 	
-	def __init__(self):
+	def __init__(self, weight_dir):
 		
 		#this is not a must dependency
 		import dlib #19.20.0
@@ -16,8 +16,7 @@ class DlibResNet:
 		
 		#---------------------
 		
-		home = str(Path.home())
-		weight_file = home+'/.deepface/weights/dlib_face_recognition_resnet_model_v1.dat'
+		weight_file = weight_dir+'dlib_face_recognition_resnet_model_v1.dat'
 		
 		#---------------------
 		
@@ -26,7 +25,7 @@ class DlibResNet:
 			print("dlib_face_recognition_resnet_model_v1.dat is going to be downloaded")  
 			
 			url = "http://dlib.net/files/dlib_face_recognition_resnet_model_v1.dat.bz2"
-			output = home+'/.deepface/weights/'+url.split("/")[-1]
+			output = weight_dir+url.split("/")[-1]
 			gdown.download(url, output, quiet=False)
 			
 			zipfile = bz2.BZ2File(output)

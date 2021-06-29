@@ -43,7 +43,7 @@ def initialize_input(img1_path, img2_path = None):
 
 def initializeFolder():
 
-	home = str(Path.home())
+	home = "./"
 
 	if not os.path.exists(home+"/.deepface"):
 		os.mkdir(home+"/.deepface")
@@ -82,19 +82,18 @@ def load_image(img):
 
 	return img
 
-def detect_face(img, detector_backend = 'opencv', grayscale = False, enforce_detection = True, align = True):
+def detect_and_align(img, detector, detector_backend, grayscale = False, enforce_detection = True, align = True):
 
 	img_region = [0, 0, img.shape[0], img.shape[1]]
 
 	#detector stored in a global variable in FaceDetector object.
 	#this call should be completed very fast because it will return found in memory
 	#it will not build face detector model in each call (consider for loops)
-	face_detector = FaceDetector.build_model(detector_backend)
 
-	detected_face, img_region = FaceDetector.detect_face(face_detector, detector_backend, img, align)
+	detected_face = FaceDetector.detect_face(detector, detector_backend, img, align)
 
 	if (isinstance(detected_face, np.ndarray)):
-		return detected_face, img_region
+		return detected_face
 	else:
 		if detected_face == None:
 			if enforce_detection != True:
@@ -102,25 +101,7 @@ def detect_face(img, detector_backend = 'opencv', grayscale = False, enforce_det
 			else:
 			  raise ValueError("Face could not be detected. Please confirm that the picture is a face photo or consider to set enforce_detection param to False.")
 
-def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_detection = True, detector_backend = 'opencv', return_region = False, align = True):
-
-	#img might be path, base64 or numpy array. Convert it to numpy whatever it is.
-	img = load_image(img)
-	base_img = img.copy()
-
-	img, region = detect_face(img = img, detector_backend = detector_backend, grayscale = grayscale, enforce_detection = enforce_detection, align = align)
-
-	#--------------------------
-
-	if img.shape[0] == 0 or img.shape[1] == 0:
-		if enforce_detection == True:
-			raise ValueError("Detected face shape is ", img.shape,". Consider to set enforce_detection argument to False.")
-		else: #restore base image
-			img = base_img.copy()
-
-	#--------------------------
-
-	#post-processing
+def preprocess_face(img, target_size=(224, 224), grayscale = False):
 	if grayscale == True:
 		img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
@@ -131,10 +112,7 @@ def preprocess_face(img, target_size=(224, 224), grayscale = False, enforce_dete
 	img_pixels = np.expand_dims(img_pixels, axis = 0)
 	img_pixels /= 255 #normalize input in [0, 1]
 
-	if return_region == True:
-		return img_pixels, region
-	else:
-		return img_pixels
+	return img_pixels
 
 def find_input_shape(model):
 

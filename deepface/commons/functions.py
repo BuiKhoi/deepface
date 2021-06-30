@@ -10,13 +10,9 @@ tf_version = int(tf.__version__.split(".")[0])
 
 if tf_version == 1:
 	import keras
-	from keras.preprocessing.image import load_img, save_img, img_to_array
-	from keras.applications.imagenet_utils import preprocess_input
 	from keras.preprocessing import image
 elif tf_version == 2:
 	from tensorflow import keras
-	from tensorflow.keras.preprocessing.image import load_img, save_img, img_to_array
-	from tensorflow.keras.applications.imagenet_utils import preprocess_input
 	from tensorflow.keras.preprocessing import image
 
 #--------------------------------------------------
@@ -38,18 +34,6 @@ def initialize_input(img1_path, img2_path = None):
 			img_list = [img1_path]
 
 	return img_list, bulkProcess
-
-def initializeFolder():
-
-	home = "./"
-
-	if not os.path.exists(home+"/.deepface"):
-		os.mkdir(home+"/.deepface")
-		print("Directory ",home,"/.deepface created")
-
-	if not os.path.exists(home+"/.deepface/weights"):
-		os.mkdir(home+"/.deepface/weights")
-		print("Directory ",home,"/.deepface/weights created")
 
 def loadBase64Img(uri):
    encoded_data = uri.split(',')[1]
